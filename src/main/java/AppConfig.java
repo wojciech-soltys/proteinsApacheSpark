@@ -13,11 +13,11 @@ public class AppConfig {
 		} else if (paramProgram.equals("pepnovo3")) {
 			programToUse = ProgramsToUse.PEPNOVO3;
 			bashScriptLocation = "/home/ec2-user/read.sh";
-			outputFileName = "testoutput4.txt";
+			outputFileName = "pepnovo3_output.txt";
 		} else {
 			programToUse = ProgramsToUse.MSGFPLUS;
 			bashScriptLocation = "/home/ec2-user/msgf/msgf.sh";
-			outputFileName = "testoutput.tsv";
+			outputFileName = "msgfPlus_output.tsv";
 		}
 		
 		pathToInputFiles = args[1];

@@ -1,5 +1,9 @@
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 public class SimpleApp {
@@ -13,8 +17,11 @@ public class SimpleApp {
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
 		JavaPairRDD<String,String> pepnovoFiles = sc.wholeTextFiles(appConfig.pathToInputFiles, 4).cache();
-		pepnovoFiles.pipe(appConfig.bashScriptLocation).collect();
-		pepnovoFiles.repartition(1).saveAsTextFile(appConfig.pathToInputFiles + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
+		JavaRDD<String> output =  pepnovoFiles.pipe(appConfig.bashScriptLocation);
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+		String actualDate = format1.format(cal.getTime());
+		output.saveAsTextFile("/user/root/" + actualDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
 		
 		sc.close();
 	}
