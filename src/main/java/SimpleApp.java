@@ -13,8 +13,19 @@ public class SimpleApp {
 		checkNumberOfParameters(args);
 		AppConfig appConfig = new AppConfig(args);
 		
-		SparkConf conf = new SparkConf().setAppName("Simple Application");
+		SparkConf conf = new SparkConf().setAppName("Simple Application")
+				.set("spark.rdd.compress", "true")
+				.set("spark.storage.memoryFraction", "1")
+				.set("spark.core.connection.ack.wait.timeout", "600")
+				//.set("spark.core.connection.auth.wait.timeout","3600")
+				.set("spark.akka.frameSize", "50")
+				//.set("spark.driver.maxResultSize", "250m")
+				;
+		conf.setJars(new String[]{"/home/ec2-user/lib/mysql-connector-java-5.1.35-bin.jar", 
+				"/root/spark/bin/proteinsApacheSpark-0.0.1.jar"});
+		
 		JavaSparkContext sc = new JavaSparkContext(conf);
+		
 		
 		JavaPairRDD<String,String> pepnovoFiles = sc.wholeTextFiles(appConfig.pathToInputFiles, 4).cache();
 		JavaRDD<String> output =  pepnovoFiles.pipe(appConfig.bashScriptLocation);
@@ -22,6 +33,8 @@ public class SimpleApp {
 		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 		String actualDate = format1.format(cal.getTime());
 		output.saveAsTextFile("/user/root/" + actualDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
+		
+		output.foreachPartition(new DatabaseSaveFunction());
 		
 		sc.close();
 	}
