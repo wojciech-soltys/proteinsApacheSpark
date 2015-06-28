@@ -11,7 +11,6 @@ public class SimpleApp {
 		
 	public static void main(String[] args) {
 		//System.setProperty("hadoop.home.dir", "d:\\winutil\\");
-		checkNumberOfParameters(args);
 		AppConfig appConfig = new AppConfig(args);
 		
 		SparkConf conf = new SparkConf().setAppName("Simple Application")
@@ -22,31 +21,20 @@ public class SimpleApp {
 				.set("spark.akka.frameSize", "50")
 				//.set("spark.driver.maxResultSize", "250m")
 				;
-		conf.setJars(new String[]{"/home/ec2-user/lib/mysql-connector-java-5.1.35-bin.jar", 
-				"/root/spark/bin/proteinsApacheSpark-0.0.1.jar"});
+		conf.setJars(new String[]{appConfig.appPath, appConfig.mySQLConnectorPath});
 		
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		
-		JavaPairRDD<String,String> pepnovoFiles = sc.wholeTextFiles(appConfig.pathToInputFiles, 8).cache();
-		JavaRDD<String> output =  pepnovoFiles.pipe(appConfig.bashScriptLocation);
+		System.out.println("AAAAAAAAAAAAAAAAAAAA:" + appConfig.getBashScriptPath());
+		JavaPairRDD<String,String> pepnovoFiles = sc.wholeTextFiles(appConfig.inputFilesPath, appConfig.numberOfPartitions).cache();
+		JavaRDD<String> output =  pepnovoFiles.pipe(appConfig.getBashScriptPath());
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 		String actualDate = format1.format(cal.getTime());
-		output.saveAsTextFile("/user/root/" + actualDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
+		output.saveAsTextFile("/outputFiles/" + actualDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
 		
 		/*output.foreachPartition(new DatabaseSaveFunction());*/
 		
 		sc.close();
-	}
-	
-	private static void checkNumberOfParameters(String[] args) {
-		if(args.length < 2) {
-			System.out.println("Too few arguments");
-			System.exit(1);
-		} else if (args.length > 2) {
-			System.out.println("Too many arguments");
-			System.exit(1);
-		}
 	}
 }

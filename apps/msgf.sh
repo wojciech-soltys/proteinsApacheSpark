@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /home/ec2-user/proteinApps/msgf
-rm -f -r test.mgf
+rm -f -r inputPartialFile.mgf
 while read line
 do
   echo "$line" >> inputPartialFile.mgf

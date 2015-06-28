@@ -1,27 +1,55 @@
 package main;
 
+import utils.ConfigFileParser;
+import utils.AppsToUse;
+
 public class AppConfig {
-	public ProgramsToUse programToUse;
-	public String bashScriptLocation;
+	public String appPath;
+	public String mySQLConnectorPath;
+	public String msgfPath;
+	public String pepnovoPath;
+	public String inputFilesPath;
+	public int numberOfPartitions;
+	public AppsToUse appToUse;
 	public String outputFileName;
-	public String pathToInputFiles;
 	
 	public AppConfig(String[] args) {
-		final String paramProgram = args[0];
-		if(!paramProgram.equals("pepnovo") && !paramProgram.equals("msgf")) {
+		checkNumberOfParameters(args);
+		final String configFilePath = args[0];
+		ConfigFileParser.parse(configFilePath, this);
+	}
+
+	public void setAppToUse(String paramProgram) {
+		if(!paramProgram.equals("Pepnovo") && !paramProgram.equals("MSGF+")) {
 			System.out.println("Bad program to use");
 			System.exit(1);
-		} else if (paramProgram.equals("pepnovo")) {
-			programToUse = ProgramsToUse.PEPNOVO;
-			bashScriptLocation = "/home/ec2-user/proteinApps/pepnovo.sh";
-			outputFileName = "pepnovo3_output.txt";
+		} else if (paramProgram.equals("Pepnovo")) {
+			appToUse = AppsToUse.PEPNOVO;
+			outputFileName = "Pepnovo3_output.txt";
 		} else {
-			programToUse = ProgramsToUse.MSGFPLUS;
-			bashScriptLocation = "/home/ec2-user/proteinApps/msgf/msgf.sh";
-			outputFileName = "msgfPlus_output.tsv";
+			appToUse = AppsToUse.MSGFPLUS;
+			outputFileName = "MSGF+_output.tsv";
 		}
-		
-		pathToInputFiles = args[1];
+	}
+	
+	public String getBashScriptPath () {
+		switch (appToUse) {
+			case PEPNOVO :
+				return pepnovoPath;
+			case MSGFPLUS :
+				return msgfPath;
+		}
+		return "";
+	}
+	
+	private void checkNumberOfParameters(String[] args) {
+		if(args.length < 1) {
+			System.out.println("Too few arguments");
+			System.exit(1);
+		} else if (args.length > 1) {
+			System.out.println("Too many arguments");
+			System.exit(1);
+		}
 	}
 	
 }
