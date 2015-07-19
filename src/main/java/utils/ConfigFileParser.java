@@ -81,7 +81,10 @@ public class ConfigFileParser {
 				break;
 			case "AppToUse" :
 				appConfig.setAppToUse(paramValue);
-				break;			
+				break;
+			case "SaveToDatabase" :
+				appConfig.saveToDatabase = paramValue.equals("TRUE");
+				break;
 		}
 	}
 }

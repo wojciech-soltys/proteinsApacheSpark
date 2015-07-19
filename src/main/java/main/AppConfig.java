@@ -12,6 +12,8 @@ public class AppConfig {
 	public int numberOfPartitions;
 	public AppsToUse appToUse;
 	public String outputFileName;
+	public boolean saveToDatabase = false;
+	public long jobId;
 	
 	public AppConfig(String[] args) {
 		checkNumberOfParameters(args);
@@ -32,12 +34,22 @@ public class AppConfig {
 		}
 	}
 	
-	public String getBashScriptPath () {
+	public String getBashScriptPath() {
 		switch (appToUse) {
 			case PEPNOVO :
 				return pepnovoPath;
 			case MSGFPLUS :
 				return msgfPath;
+		}
+		return "";
+	}
+	
+	public String getProgramName() {
+		switch (appToUse) {
+			case PEPNOVO :
+				return "Pepnovo3";
+			case MSGFPLUS :
+				return "MSGF+";
 		}
 		return "";
 	}
