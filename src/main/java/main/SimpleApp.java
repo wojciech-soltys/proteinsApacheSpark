@@ -1,12 +1,17 @@
 package main;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.VoidFunction;
 
+import database.DatabaseTool;
 import database.PepnovoDatabaseSaveFunction;
 
 public class SimpleApp {
@@ -17,20 +22,24 @@ public class SimpleApp {
 		
 		SparkConf conf = new SparkConf().setAppName("Simple Application")
 				.set("spark.rdd.compress", "true")
-				.set("spark.storage.memoryFraction", "1")
-				.set("spark.core.connection.ack.wait.timeout", "600")
+				.set("spark.storage.memoryFraction", "0.5")
+				.set("spark.core.connection.ack.wait.timeout", "6000")
 				//.set("spark.core.connection.auth.wait.timeout","3600")
 				.set("spark.akka.frameSize", "50")
-				//.set("spark.driver.maxResultSize", "250m")
 				//.set("spark.driver.extraLibraryPath", appConfig.mySQLConnectorPath)
 				;
 		//JavaSparkContext.jarOfClass(SimpleApp.class)
-		conf.setJars(new String[]{appConfig.appPath, appConfig.mySQLConnectorPath});
+		//conf.setJars(new String[]{appConfig.appPath, appConfig.mySQLConnectorPath});
+		ArrayList<String> jars = new ArrayList<String>(Arrays.asList(JavaSparkContext.jarOfClass(SimpleApp.class)));
+		jars.add(appConfig.mySQLConnectorPath);
+		String[] jarsArray = new String[jars.size()];
+		jars.toArray( jarsArray );
+		conf.setJars(jarsArray);
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		//sc.addJar(appConfig.mySQLConnectorPath);
 		
-/*		DatabaseTool dateDatabaseTool = new DatabaseTool();
-		dateDatabaseTool.saveJobStart(appConfig);*/
+		DatabaseTool databaseTool = new DatabaseTool();
+		//dateDatabaseTool.saveJobStart(appConfig);
 		
 		JavaPairRDD<String,String> pepnovoFiles = sc.wholeTextFiles(appConfig.inputFilesPath, appConfig.numberOfPartitions);
 		JavaRDD<String> output =  pepnovoFiles.pipe(appConfig.getBashScriptPath());
@@ -39,9 +48,8 @@ public class SimpleApp {
 		String actualDate = format1.format(cal.getTime());
 		output.saveAsTextFile("/outputFiles/" + actualDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1) 
 		
-		if(appConfig.saveToDatabase) {
-			output.foreachPartition(new PepnovoDatabaseSaveFunction());
-		}
+		//saving to database
+		databaseTool.saveOutputToDatabase(appConfig, output);
 		
 		sc.close();
 	}

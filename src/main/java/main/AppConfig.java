@@ -22,12 +22,12 @@ public class AppConfig {
 	}
 
 	public void setAppToUse(String paramProgram) {
-		if(!paramProgram.equals("Pepnovo") && !paramProgram.equals("MSGF+")) {
+		if(!paramProgram.equals("PEPNOVO") && !paramProgram.equals("MSGF+")) {
 			System.out.println("Bad program to use");
 			System.exit(1);
-		} else if (paramProgram.equals("Pepnovo")) {
+		} else if (paramProgram.equals("PEPNOVO")) {
 			appToUse = AppsToUse.PEPNOVO;
-			outputFileName = "Pepnovo3_output.txt";
+			outputFileName = "PEPNOVO_output.txt";
 		} else {
 			appToUse = AppsToUse.MSGFPLUS;
 			outputFileName = "MSGF+_output.tsv";
@@ -47,7 +47,7 @@ public class AppConfig {
 	public String getProgramName() {
 		switch (appToUse) {
 			case PEPNOVO :
-				return "Pepnovo3";
+				return "PEPNOVO";
 			case MSGFPLUS :
 				return "MSGF+";
 		}

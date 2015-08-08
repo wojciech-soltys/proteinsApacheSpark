@@ -6,7 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Iterator;
 
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.VoidFunction;
+
+import utils.AppsToUse;
 import main.AppConfig;
 
 import com.mysql.jdbc.Statement;
@@ -54,6 +59,26 @@ public class DatabaseTool {
 				preparedStatement.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	public VoidFunction<Iterator<String>> getDatabaseSaveFunction(AppsToUse appToUse) {
+		switch (appToUse) {
+			case PEPNOVO :
+				return new PepnovoDatabaseSaveFunction();
+			case MSGFPLUS :
+				return new MSGFPlusDatabaseSaveFunction();
+			default :
+				return null;
+		}
+	}
+	
+	public void saveOutputToDatabase(AppConfig appConfig, JavaRDD<String> output) {
+		if(appConfig.saveToDatabase) {
+			VoidFunction<Iterator<String>> databaseSaveFunction = getDatabaseSaveFunction(appConfig.appToUse);
+			if (databaseSaveFunction != null) {
+				output.foreachPartition(databaseSaveFunction);
 			}
 		}
 	}
