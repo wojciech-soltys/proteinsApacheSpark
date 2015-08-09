@@ -57,12 +57,6 @@ public class ConfigFileParser {
 	
 	private static void setAppParam(String paramName, String paramValue, AppConfig appConfig) {
 		switch(paramName) {
-			case "AppPath" :
-				appConfig.appPath = paramValue;
-				break;
-			case "MySQLConnectorPath" :
-				appConfig.mySQLConnectorPath = paramValue;
-				break;
 			case "MsgfPath" :
 				appConfig.msgfPath = paramValue;
 				break;

@@ -1,4 +1,5 @@
 package database;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -6,8 +7,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.apache.spark.api.java.function.VoidFunction;
-
-import java.math.BigDecimal;
 
 import com.mysql.jdbc.Statement;
 
@@ -17,6 +16,12 @@ public class PepnovoDatabaseSaveFunction implements VoidFunction<Iterator<String
 	 * 
 	 */
 	private static final long serialVersionUID = -7039277486852158360L;
+	
+	private int jobId;
+	
+	public PepnovoDatabaseSaveFunction (int jobId) {
+		this.jobId = jobId;
+	}
 
 	public void call(Iterator<String> it) {
 		
@@ -58,8 +63,8 @@ public class PepnovoDatabaseSaveFunction implements VoidFunction<Iterator<String
 					.prepareStatement("insert into  proteins.ScansPepnovo(ScansPepnovoId, JobId, ScanNumber, RT, Raw, SQS, AdditionalInfo) "
 							+ "values (default, ?, ?, ?, ?, ?, ?)",
 							Statement.RETURN_GENERATED_KEYS);
-			/* TODO - dodac job ID */
-			preparedStatement.setInt(1, 0);
+
+			preparedStatement.setInt(1, jobId);
 			preparedStatement.setInt(2, getScanNumber(headerLine));
 			preparedStatement.setBigDecimal(3, getRT(headerLine));
 			preparedStatement.setString(4, getRaw(headerLine));

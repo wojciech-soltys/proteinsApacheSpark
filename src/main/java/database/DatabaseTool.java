@@ -8,11 +8,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import main.AppConfig;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.VoidFunction;
-
-import utils.AppsToUse;
-import main.AppConfig;
 
 import com.mysql.jdbc.Statement;
 
@@ -32,23 +31,22 @@ public class DatabaseTool {
 		PreparedStatement preparedStatement = null;
 		
 		try {
-			//Class.forName("com.mysql.jdbc.Driver");
 			connect = getConnection();
 
 			preparedStatement = connect
-					.prepareStatement("INSERT INTO proteins.jobs(job_id,program_name,start_time) values (default, ?, ?)",
+					.prepareStatement("INSERT INTO proteins.Jobs(JobsId,ProgramName,StartTime) values (default, ?, ?)",
 							Statement.RETURN_GENERATED_KEYS);
 
 			preparedStatement.setString(1, appConfig.getProgramName());
-			preparedStatement.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setTimestamp(2, new Timestamp(appConfig.startJobMillis));
 			preparedStatement.executeUpdate();
 			
 			try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
 	            if (generatedKeys.next()) {
-	                System.out.println(generatedKeys.getLong(1));
-	                appConfig.jobId = generatedKeys.getLong(1);
+	                System.out.println("!!!!!!!!!!! JOB ID: " + generatedKeys.getInt(1) + " REMEMBER THIS FOR GETTING RESULTS !!!!!!!!!!!");
+	                appConfig.jobId = generatedKeys.getInt(1);
 	            }
-	        }	
+	        }
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -63,12 +61,70 @@ public class DatabaseTool {
 		}
 	}
 	
-	public VoidFunction<Iterator<String>> getDatabaseSaveFunction(AppsToUse appToUse) {
-		switch (appToUse) {
+	public void setComputationsEndTime(AppConfig appConfig) {
+		
+		Connection connect = null;
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			connect = getConnection();
+
+			preparedStatement = connect
+					.prepareStatement("UPDATE proteins.Jobs SET ComputationsEndTime = ? WHERE JobsId = ?");
+
+			preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setInt(2, appConfig.jobId);
+			preparedStatement.executeUpdate();
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				connect.close();
+				preparedStatement.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void setJobEndTime(AppConfig appConfig) {
+		
+		Connection connect = null;
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			connect = getConnection();
+
+			preparedStatement = connect
+					.prepareStatement("UPDATE proteins.Jobs SET EndTime = ? WHERE JobsId = ?");
+
+			preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setInt(2, appConfig.jobId);
+			preparedStatement.executeUpdate();
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				connect.close();
+				preparedStatement.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public VoidFunction<Iterator<String>> getDatabaseSaveFunction(AppConfig appConfig) {
+		switch (appConfig.appToUse) {
 			case PEPNOVO :
-				return new PepnovoDatabaseSaveFunction();
+				return new PepnovoDatabaseSaveFunction(appConfig.jobId);
 			case MSGFPLUS :
-				return new MSGFPlusDatabaseSaveFunction();
+				return new MSGFPlusDatabaseSaveFunction(appConfig.jobId);
 			default :
 				return null;
 		}
@@ -76,7 +132,7 @@ public class DatabaseTool {
 	
 	public void saveOutputToDatabase(AppConfig appConfig, JavaRDD<String> output) {
 		if(appConfig.saveToDatabase) {
-			VoidFunction<Iterator<String>> databaseSaveFunction = getDatabaseSaveFunction(appConfig.appToUse);
+			VoidFunction<Iterator<String>> databaseSaveFunction = getDatabaseSaveFunction(appConfig);
 			if (databaseSaveFunction != null) {
 				output.foreachPartition(databaseSaveFunction);
 			}

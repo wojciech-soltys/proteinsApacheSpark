@@ -4,8 +4,6 @@ import utils.ConfigFileParser;
 import utils.AppsToUse;
 
 public class AppConfig {
-	public String appPath;
-	public String mySQLConnectorPath;
 	public String msgfPath;
 	public String pepnovoPath;
 	public String inputFilesPath;
@@ -13,9 +11,11 @@ public class AppConfig {
 	public AppsToUse appToUse;
 	public String outputFileName;
 	public boolean saveToDatabase = false;
-	public long jobId;
+	public int jobId;
+	public long startJobMillis;
 	
 	public AppConfig(String[] args) {
+		this.startJobMillis = System.currentTimeMillis();
 		checkNumberOfParameters(args);
 		final String configFilePath = args[0];
 		ConfigFileParser.parse(configFilePath, this);

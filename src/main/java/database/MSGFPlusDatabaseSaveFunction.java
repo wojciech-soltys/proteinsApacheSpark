@@ -13,6 +13,12 @@ public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<Strin
 	 * 
 	 */
 	private static final long serialVersionUID = -7039277486852158360L;
+	
+	private int jobId;
+	
+	public MSGFPlusDatabaseSaveFunction (int jobId) {
+		this.jobId = jobId;
+	}
 
 	public void call(Iterator<String> it) {
 		
@@ -46,8 +52,7 @@ public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<Strin
 							+ "values (default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			
 			
-			/* TODO - dodac job ID */
-			preparedStatement.setInt(1, 0);
+			preparedStatement.setInt(1, jobId);
 			preparedStatement.setInt(2, new Integer(detailsFields[1].substring(detailsFields[1].indexOf("=") + 1)));
 			preparedStatement.setInt(3, new Integer(detailsFields[2]));
 			preparedStatement.setString(4, detailsFields[3]);
