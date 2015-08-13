@@ -27,94 +27,103 @@ public class DatabaseTool {
 	
 	public void saveJobStart(AppConfig appConfig) {
 		
-		Connection connect = null;
-		PreparedStatement preparedStatement = null;
-		
-		try {
-			connect = getConnection();
-
-			preparedStatement = connect
-					.prepareStatement("INSERT INTO proteins.Jobs(JobsId,ProgramName,StartTime) values (default, ?, ?)",
-							Statement.RETURN_GENERATED_KEYS);
-
-			preparedStatement.setString(1, appConfig.getProgramName());
-			preparedStatement.setTimestamp(2, new Timestamp(appConfig.startJobMillis));
-			preparedStatement.executeUpdate();
+		if(appConfig.saveToDatabase) {
+			Connection connect = null;
+			PreparedStatement preparedStatement = null;
 			
-			try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-	            if (generatedKeys.next()) {
-	                System.out.println("!!!!!!!!!!! JOB ID: " + generatedKeys.getInt(1) + " REMEMBER THIS FOR GETTING RESULTS !!!!!!!!!!!");
-	                appConfig.jobId = generatedKeys.getInt(1);
-	            }
-	        }
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
 			try {
-				connect.close();
-				preparedStatement.close();
+				connect = getConnection();
+	
+				preparedStatement = connect
+						.prepareStatement("INSERT INTO proteins.Jobs(JobsId,ProgramName,StartTime) values (default, ?, ?)",
+								Statement.RETURN_GENERATED_KEYS);
+	
+				preparedStatement.setString(1, appConfig.getProgramName());
+				preparedStatement.setTimestamp(2, new Timestamp(appConfig.startJobMillis));
+				preparedStatement.executeUpdate();
+				
+				try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+		            if (generatedKeys.next()) {
+		                System.out.println("!!!!!!!!!!! JOB ID: " + generatedKeys.getInt(1) + " REMEMBER THIS FOR GETTING RESULTS !!!!!!!!!!!");
+		                appConfig.jobId = generatedKeys.getInt(1);
+		            }
+		        }
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					connect.close();
+					preparedStatement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
 	public void setComputationsEndTime(AppConfig appConfig) {
+		long computationsEndMillis = System.currentTimeMillis();
+		System.out.println("Computations took: " + (computationsEndMillis - appConfig.startJobMillis)/1000 + "s");
 		
-		Connection connect = null;
-		PreparedStatement preparedStatement = null;
-		
-		try {
-			connect = getConnection();
-
-			preparedStatement = connect
-					.prepareStatement("UPDATE proteins.Jobs SET ComputationsEndTime = ? WHERE JobsId = ?");
-
-			preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-			preparedStatement.setInt(2, appConfig.jobId);
-			preparedStatement.executeUpdate();
+		if(appConfig.saveToDatabase) {
+			Connection connect = null;
+			PreparedStatement preparedStatement = null;
 			
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
 			try {
-				connect.close();
-				preparedStatement.close();
+				connect = getConnection();
+	
+				preparedStatement = connect
+						.prepareStatement("UPDATE proteins.Jobs SET ComputationsEndTime = ? WHERE JobsId = ?");
+	
+				preparedStatement.setTimestamp(1, new Timestamp(computationsEndMillis));
+				preparedStatement.setInt(2, appConfig.jobId);
+				preparedStatement.executeUpdate();
+				
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					connect.close();
+					preparedStatement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
 	public void setJobEndTime(AppConfig appConfig) {
-		
-		Connection connect = null;
-		PreparedStatement preparedStatement = null;
-		
-		try {
-			connect = getConnection();
-
-			preparedStatement = connect
-					.prepareStatement("UPDATE proteins.Jobs SET EndTime = ? WHERE JobsId = ?");
-
-			preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-			preparedStatement.setInt(2, appConfig.jobId);
-			preparedStatement.executeUpdate();
+		long jobEndMillis = System.currentTimeMillis();
+		System.out.println("Computations with saving to database took: " + (jobEndMillis - appConfig.startJobMillis)/1000 + "s");
+		if(appConfig.saveToDatabase) {
+			Connection connect = null;
+			PreparedStatement preparedStatement = null;
 			
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
 			try {
-				connect.close();
-				preparedStatement.close();
+				connect = getConnection();
+	
+				preparedStatement = connect
+						.prepareStatement("UPDATE proteins.Jobs SET EndTime = ? WHERE JobsId = ?");
+	
+				preparedStatement.setTimestamp(1, new Timestamp(jobEndMillis));
+				preparedStatement.setInt(2, appConfig.jobId);
+				preparedStatement.executeUpdate();
+				
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					connect.close();
+					preparedStatement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

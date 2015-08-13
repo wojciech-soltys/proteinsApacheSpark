@@ -33,12 +33,12 @@ public class AppTool {
 	
 	public JavaRDD<String> compute(AppConfig appConfig, JavaSparkContext sparkContext) {
 		
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 		String jobStartDate = dateFormat.format(new Date(appConfig.startJobMillis));
 		
 		JavaPairRDD<String,String> inputFiles = sparkContext.wholeTextFiles(appConfig.inputFilesPath, appConfig.numberOfPartitions);
 		JavaRDD<String> output =  inputFiles.pipe(appConfig.getBashScriptPath());
-		output.saveAsTextFile("/outputFiles/" + jobStartDate + "/" + appConfig.jobId + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1)
+		output.saveAsTextFile("/outputFiles/" + jobStartDate + "/" + appConfig.outputFileName); //coalesce(1,true) repartition(1)
 		return output;
 	}
 }
