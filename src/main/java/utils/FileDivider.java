@@ -1,4 +1,5 @@
 package utils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,25 +10,38 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+public class FileDivider {
 
-public class FileDivider { 
-	
 	/**Maksymalny rozmiar pliku (max block size in HDFS) **/
 	public static final long MAX_FILE_SIZE = 64 * 1024 * 1024;
 	
+	public static void main(String[] args) {
+		if(args.length < 2) {
+			System.out.println("Bad number of parameters");
+			System.exit(1);
+		} else if(args.length > 3) {
+			System.out.println("Bad number of parameters");
+			System.exit(1);
+		} else if (args.length == 2) {
+			divideFile(args[0],args[1], false);
+		} else if (args.length == 3) {
+			divideFile(args[0],args[1], Boolean.parseBoolean(args[2]));
+		}
+		
+	}
+	
 	public static int divideFile(String inputFilePath, String maxSizeString, boolean addHeader) {
 		
-		System.out.println("FileDivider.divideFile - start");
-		System.out.println("FileDivider.divideFile - max file size: " + maxSizeString);
+		//System.out.println("max file size: " + maxSizeString);
 		BufferedReader br = null;
 		BufferedWriter bw = null;
+		int fileCount = 1;
 		try {
 			long maxSize = calcMaxSize(maxSizeString);
 			if(maxSize > MAX_FILE_SIZE) {
 				maxSize = MAX_FILE_SIZE;
 			}
 
-			int fileCount = 0;
 			File file = createNewFile(inputFilePath, fileCount, true);
 			
 			br = new BufferedReader(new FileReader(inputFilePath));
@@ -59,14 +73,14 @@ public class FileDivider {
 				ions = "";	
 				
 			} while (line != null);
-				
-			return fileCount;
-		} catch (FileNotFoundException e) {
 			
+			return fileCount;
+		} catch (FileNotFoundException e) {			
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
+			System.out.print(fileCount);
 			closeReader(br);
 			closeWriter(bw);
 		}
@@ -129,12 +143,12 @@ public class FileDivider {
 		File file = new File(dirPath);
 		if(isFirstCreation) {
 			deleteFolder(file);
-			System.out.println("FileDivider.createNewFile - deleted folder: " + dirPath);
+			//System.out.println("folder: " + dirPath + " have been deleted");
 		}
 		file.mkdirs();
 		file = new File(filePath);
 		file.createNewFile();
-		System.out.println("FileDivider.createNewFile - created file: " + filePath);
+		//System.out.println("file: " + filePath + " have been created");
 		return file;
 	}
 	
@@ -163,5 +177,5 @@ public class FileDivider {
 	    }
 	    folder.delete();
 	}
-	
+
 }
