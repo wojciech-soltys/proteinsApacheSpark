@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import main.AppConfig;
+
 import org.apache.spark.api.java.function.VoidFunction;
 
 public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<String>> {
@@ -14,10 +16,10 @@ public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<Strin
 	 */
 	private static final long serialVersionUID = -7039277486852158360L;
 	
-	private int jobId;
+	private AppConfig appconfig;
 	
-	public MSGFPlusDatabaseSaveFunction (int jobId) {
-		this.jobId = jobId;
+	public MSGFPlusDatabaseSaveFunction (AppConfig appconfig) {
+		this.appconfig = appconfig;
 	}
 
 	public void call(Iterator<String> it) {
@@ -44,7 +46,7 @@ public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<Strin
 			}
 			
 			DatabaseTool databaseTool = new DatabaseTool();
-			connect = databaseTool.getConnection();
+			connect = databaseTool.getConnection(appconfig);
 	
 			//ScansMSGFPlusId, JobId, SpecID, ScanNum, Title, FragMethod, Precursor, IsotopeError, PrecursorError, Charge, Peptide, Protein, DeNovoScore, MSGFScore, SpecEValue, EValue
 			preparedStatement = connect
@@ -52,7 +54,7 @@ public class MSGFPlusDatabaseSaveFunction implements VoidFunction<Iterator<Strin
 							+ "values (default, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			
 			
-			preparedStatement.setInt(1, jobId);
+			preparedStatement.setInt(1, appconfig.jobId);
 			preparedStatement.setInt(2, new Integer(detailsFields[1].substring(detailsFields[1].indexOf("=") + 1)));
 			preparedStatement.setInt(3, new Integer(detailsFields[2]));
 			preparedStatement.setString(4, detailsFields[3]);

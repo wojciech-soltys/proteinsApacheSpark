@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import main.AppConfig;
+
 import org.apache.spark.api.java.function.VoidFunction;
 
 import com.mysql.jdbc.Statement;
@@ -17,10 +19,10 @@ public class PepnovoDatabaseSaveFunction implements VoidFunction<Iterator<String
 	 */
 	private static final long serialVersionUID = -7039277486852158360L;
 	
-	private int jobId;
+	private AppConfig appconfig;
 	
-	public PepnovoDatabaseSaveFunction (int jobId) {
-		this.jobId = jobId;
+	public PepnovoDatabaseSaveFunction (AppConfig appconfig) {
+		this.appconfig = appconfig;
 	}
 
 	public void call(Iterator<String> it) {
@@ -57,14 +59,14 @@ public class PepnovoDatabaseSaveFunction implements VoidFunction<Iterator<String
 		
 		try {
 			DatabaseTool databaseTool = new DatabaseTool();
-			connect = databaseTool.getConnection();
+			connect = databaseTool.getConnection(appconfig);
 	
 			preparedStatement = connect
 					.prepareStatement("insert into  proteins.ScansPepnovo(ScansPepnovoId, JobId, ScanNumber, RT, Raw, SQS, AdditionalInfo) "
 							+ "values (default, ?, ?, ?, ?, ?, ?)",
 							Statement.RETURN_GENERATED_KEYS);
 
-			preparedStatement.setInt(1, jobId);
+			preparedStatement.setInt(1, appconfig.jobId);
 			preparedStatement.setInt(2, getScanNumber(headerLine));
 			preparedStatement.setBigDecimal(3, getRT(headerLine));
 			preparedStatement.setString(4, getRaw(headerLine));
@@ -136,7 +138,7 @@ public class PepnovoDatabaseSaveFunction implements VoidFunction<Iterator<String
 		try {
 			
 			DatabaseTool databaseTool = new DatabaseTool();
-			connect = databaseTool.getConnection();
+			connect = databaseTool.getConnection(appconfig);
 			
 			//(ScanDetailsPepnovoId, ScanId, Index, RnkScr, PnvScr, NGap, CGap, MH, Charge, Sequence)"
 			preparedStatement = connect

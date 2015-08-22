@@ -79,6 +79,15 @@ public class ConfigFileParser {
 			case "SaveToDatabase" :
 				appConfig.saveToDatabase = paramValue.equals("TRUE");
 				break;
+			case "DatabaseHostName" :
+				appConfig.setDatabaseHostName(paramValue);
+				break;
+			case "DatabaseUser" :
+				appConfig.setDatabaseUser(paramValue);
+				break;
+			case "DatabasePassword" :
+				appConfig.setDatabasePassword(paramValue);
+				break;
 		}
 	}
 }

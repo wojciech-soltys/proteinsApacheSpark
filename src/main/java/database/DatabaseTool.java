@@ -18,11 +18,11 @@ import com.mysql.jdbc.Statement;
 public class DatabaseTool {
 	
 	
-	public Connection getConnection () throws SQLException, ClassNotFoundException{
+	public Connection getConnection (AppConfig appConfig) throws SQLException, ClassNotFoundException{
 		Class.forName("com.mysql.jdbc.Driver");
 		return DriverManager.getConnection("jdbc:mysql://"
-				+ "proteins-database.cgr4a9metqrx.us-west-2.rds.amazonaws.com" + "/"
-				+ "proteins", "wojtala6", "wojtala2");
+				+ appConfig.databaseHostName + "/"
+				+ appConfig.databaseName, appConfig.databaseUser, appConfig.databasePassword);
 	}
 	
 	public void saveJobStart(AppConfig appConfig) {
@@ -32,7 +32,7 @@ public class DatabaseTool {
 			PreparedStatement preparedStatement = null;
 			
 			try {
-				connect = getConnection();
+				connect = getConnection(appConfig);
 	
 				preparedStatement = connect
 						.prepareStatement("INSERT INTO proteins.Jobs(JobsId,ProgramName,StartTime) values (default, ?, ?)",
@@ -72,7 +72,7 @@ public class DatabaseTool {
 			PreparedStatement preparedStatement = null;
 			
 			try {
-				connect = getConnection();
+				connect = getConnection(appConfig);
 	
 				preparedStatement = connect
 						.prepareStatement("UPDATE proteins.Jobs SET ComputationsEndTime = ? WHERE JobsId = ?");
@@ -104,7 +104,7 @@ public class DatabaseTool {
 			PreparedStatement preparedStatement = null;
 			
 			try {
-				connect = getConnection();
+				connect = getConnection(appConfig);
 	
 				preparedStatement = connect
 						.prepareStatement("UPDATE proteins.Jobs SET EndTime = ? WHERE JobsId = ?");
@@ -131,9 +131,9 @@ public class DatabaseTool {
 	public VoidFunction<Iterator<String>> getDatabaseSaveFunction(AppConfig appConfig) {
 		switch (appConfig.appToUse) {
 			case PEPNOVO :
-				return new PepnovoDatabaseSaveFunction(appConfig.jobId);
+				return new PepnovoDatabaseSaveFunction(appConfig);
 			case MSGFPLUS :
-				return new MSGFPlusDatabaseSaveFunction(appConfig.jobId);
+				return new MSGFPlusDatabaseSaveFunction(appConfig);
 			default :
 				return null;
 		}
